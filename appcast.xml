@@ -1,0 +1,15 @@
+<?xml version="1.0" standalone="yes"?>
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
+    <channel>
+        <title>KeyboardLock</title>
+        <item>
+            <title>0.1.0</title>
+            <pubDate>Thu, 01 Jan 2026 11:39:41 +0000</pubDate>
+            <link>https://github.com/martin-buur/KeyboardLock/releases</link>
+            <sparkle:version>4</sparkle:version>
+            <sparkle:shortVersionString>0.1.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>15.6</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/martin-buur/KeyboardLock/releases/download/v0.1.0/KeyboardLock-v0.1.0.dmg" length="936736" type="application/octet-stream" sparkle:edSignature="Vq0ims73vW9F7ZPj8qUIluHTdEsJ8IxmlF/rXqovGqTHVGmgwAZ4xdSSemzs6asSV3v+3ddR/LEPztSiuwtTCw=="/>
+        </item>
+    </channel>
+</rss>
