@@ -9,6 +9,27 @@ import ServiceManagement
 import SwiftUI
 
 struct SettingsView: View {
+    var body: some View {
+        TabView {
+            GeneralSettingsView()
+                .tabItem {
+                    Label("General", systemImage: "gearshape")
+                }
+
+            RaycastIntegrationView()
+                .tabItem {
+                    Label("Raycast", systemImage: "command")
+                }
+        }
+        .frame(width: 450)
+        .fixedSize(horizontal: false, vertical: true)
+        .onAppear {
+            NSApp.activate(ignoringOtherApps: true)
+        }
+    }
+}
+
+struct GeneralSettingsView: View {
     @AppStorage(SettingsKey.autoUnlockEnabled) private var autoUnlockEnabled = true
     @AppStorage(SettingsKey.autoUnlockDuration) private var autoUnlockDuration: Double = 120
     @AppStorage(SettingsKey.defaultLockMode) private var defaultLockMode = LockMode.keyboard.rawValue
@@ -56,10 +77,8 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .frame(width: 400)
         .fixedSize(horizontal: false, vertical: true)
         .onAppear {
-            NSApp.activate(ignoringOtherApps: true)
             launchAtLogin = SMAppService.mainApp.status == .enabled
         }
     }
