@@ -15,7 +15,7 @@ struct KeyboardLockApp: App {
         MenuBarExtra {
             MenuBarView(keyboardManager: appDelegate.keyboardManager)
         } label: {
-            Image(systemName: appDelegate.keyboardManager.isLocked ? "keyboard.badge.ellipsis" : "keyboard")
+            MenuBarIcon(keyboardManager: appDelegate.keyboardManager)
         }
         .menuBarExtraStyle(.menu)
 
@@ -55,6 +55,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         default:
             break
         }
+    }
+}
+
+struct MenuBarIcon: View {
+    @ObservedObject var keyboardManager: KeyboardManager
+
+    var body: some View {
+        Image(systemName: keyboardManager.isLocked ? "keyboard.fill" : "keyboard")
     }
 }
 
