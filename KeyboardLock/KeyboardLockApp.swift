@@ -64,20 +64,11 @@ struct MenuBarView: View {
 
     var body: some View {
         if keyboardManager.isLocked {
-            Text("🔒 Keyboard Locked")
-                .font(.headline)
-            Text("Press ⌘ 6 times to unlock")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            Divider()
             Button("Unlock Keyboard") {
                 keyboardManager.unlock()
             }
             .keyboardShortcut("u", modifiers: [])
         } else {
-            Text("Keyboard Unlocked")
-                .font(.headline)
-            Divider()
             Button("Lock Keyboard") {
                 keyboardManager.lock()
             }
