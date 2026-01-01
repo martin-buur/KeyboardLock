@@ -132,12 +132,14 @@ git push origin v1.0.1
 ### 5. Monitor the Build
 
 ```bash
-# Watch the workflow
+# Watch the workflow (blocks until complete, exits non-zero on failure)
 gh run watch --exit-status
 
 # Or view in browser
 gh run view --web
 ```
+
+**For Claude Code:** After pushing a release tag, use `gh run watch --exit-status` to monitor the build in real-time. This will stream the workflow progress and exit with an error if the build fails, allowing you to diagnose issues.
 
 ### 6. Verify the Release
 
