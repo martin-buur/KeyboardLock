@@ -51,7 +51,7 @@ struct LockOverlayView: View {
     let showUnlockButton: Bool
 
     @State private var pressCount = 0
-    @State private var remainingSeconds: Int = 120
+    @State private var remainingSeconds: Int?
     private let requiredPresses = 6
 
     var body: some View {
@@ -107,12 +107,14 @@ struct LockOverlayView: View {
             }
 
             // Countdown timer at bottom
-            VStack {
-                Spacer()
-                Text(timerText)
-                    .font(.system(size: 14, weight: .medium, design: .monospaced))
-                    .foregroundStyle(.white.opacity(0.4))
-                    .padding(.bottom, 32)
+            if let remaining = remainingSeconds {
+                VStack {
+                    Spacer()
+                    Text(timerText(remaining))
+                        .font(.system(size: 14, weight: .medium, design: .monospaced))
+                        .foregroundStyle(.white.opacity(0.4))
+                        .padding(.bottom, 32)
+                }
             }
         }
         .ignoresSafeArea()
@@ -130,7 +132,7 @@ struct LockOverlayView: View {
         }
     }
 
-    private var timerText: String {
+    private func timerText(_ remainingSeconds: Int) -> String {
         let minutes = remainingSeconds / 60
         let seconds = remainingSeconds % 60
         return String(format: "Auto-unlock in %d:%02d", minutes, seconds)

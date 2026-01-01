@@ -18,6 +18,10 @@ struct KeyboardLockApp: App {
             Image(systemName: appDelegate.keyboardManager.isLocked ? "keyboard.badge.ellipsis" : "keyboard")
         }
         .menuBarExtraStyle(.menu)
+
+        Settings {
+            SettingsView()
+        }
     }
 }
 
@@ -25,6 +29,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let keyboardManager = KeyboardManager()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        AppSettings.registerDefaults()
+
         // Register for URL events
         NSAppleEventManager.shared().setEventHandler(
             self,
@@ -53,7 +59,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                let lockMode = LockMode(rawValue: mode) {
                 keyboardManager.lock(mode: lockMode)
             } else {
-                keyboardManager.lock(mode: .keyboard)
+                keyboardManager.lock()
             }
         case "unlock":
             keyboardManager.unlock()
@@ -104,6 +110,11 @@ struct MenuBarView: View {
             }
             Divider()
         }
+
+        SettingsLink {
+            Text("Settings...")
+        }
+        .keyboardShortcut(",", modifiers: .command)
 
         Button("Quit") {
             NSApplication.shared.terminate(nil)

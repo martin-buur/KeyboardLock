@@ -43,7 +43,6 @@ final class KeyboardManager: ObservableObject {
     private let overlayController = LockOverlayController()
     private var autoUnlockTimer: DispatchWorkItem?
     private var countdownTimer: Timer?
-    private let autoUnlockDuration: TimeInterval = 120 // 2 minutes
 
     init() {
         checkPermission()
@@ -72,8 +71,9 @@ final class KeyboardManager: ObservableObject {
 
     // MARK: - Lock/Unlock
 
-    func lock(mode: LockMode = .keyboard) {
+    func lock(mode: LockMode? = nil) {
         guard !isLocked else { return }
+        let mode = mode ?? AppSettings.defaultLockMode
 
         // Check permission first
         checkPermission()
@@ -164,13 +164,20 @@ final class KeyboardManager: ObservableObject {
         if isLocked {
             unlock()
         } else {
-            lock(mode: .keyboard)
+            lock(mode: AppSettings.defaultLockMode)
         }
     }
 
     // MARK: - Auto-Unlock Timer
 
     private func startAutoUnlockTimer() {
+        guard UserDefaults.standard.bool(forKey: SettingsKey.autoUnlockEnabled) else {
+            return
+        }
+
+        let duration = UserDefaults.standard.double(forKey: SettingsKey.autoUnlockDuration)
+        let autoUnlockDuration = duration > 0 ? duration : 120
+
         lockEndTime = Date().addingTimeInterval(autoUnlockDuration)
 
         // Post initial timer update
