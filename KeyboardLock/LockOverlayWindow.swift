@@ -11,10 +11,10 @@ import SwiftUI
 final class LockOverlayController {
     private var overlayWindows: [NSWindow] = []
 
-    func show() {
+    func show(showUnlockButton: Bool) {
         // Create an overlay for each screen
         for screen in NSScreen.screens {
-            let window = createOverlayWindow(for: screen)
+            let window = createOverlayWindow(for: screen, showUnlockButton: showUnlockButton)
             overlayWindows.append(window)
             window.orderFrontRegardless()
         }
@@ -27,7 +27,7 @@ final class LockOverlayController {
         overlayWindows.removeAll()
     }
 
-    private func createOverlayWindow(for screen: NSScreen) -> NSWindow {
+    private func createOverlayWindow(for screen: NSScreen, showUnlockButton: Bool) -> NSWindow {
         let window = NSPanel(
             contentRect: screen.frame,
             styleMask: [.borderless, .nonactivatingPanel],
@@ -40,15 +40,18 @@ final class LockOverlayController {
         window.isOpaque = false
         window.backgroundColor = .clear
         window.hasShadow = false
-        window.ignoresMouseEvents = false // Block clicks - unlock via button or CMD key
-        window.contentView = NSHostingView(rootView: LockOverlayView())
+        window.ignoresMouseEvents = false
+        window.contentView = NSHostingView(rootView: LockOverlayView(showUnlockButton: showUnlockButton))
 
         return window
     }
 }
 
 struct LockOverlayView: View {
+    let showUnlockButton: Bool
+
     @State private var pressCount = 0
+    @State private var remainingSeconds: Int = 120
     private let requiredPresses = 6
 
     var body: some View {
@@ -85,20 +88,31 @@ struct LockOverlayView: View {
                         .foregroundStyle(.white.opacity(0.8))
                 }
 
-                Button(action: unlock) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "lock.open")
-                        Text("Unlock")
+                if showUnlockButton {
+                    Button(action: unlock) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "lock.open")
+                            Text("Unlock")
+                        }
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 32)
+                        .padding(.vertical, 16)
+                        .background(.white.opacity(0.2))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 32)
-                    .padding(.vertical, 16)
-                    .background(.white.opacity(0.2))
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .buttonStyle(.plain)
+                    .padding(.top, 16)
                 }
-                .buttonStyle(.plain)
-                .padding(.top, 16)
+            }
+
+            // Countdown timer at bottom
+            VStack {
+                Spacer()
+                Text(timerText)
+                    .font(.system(size: 14, weight: .medium, design: .monospaced))
+                    .foregroundStyle(.white.opacity(0.4))
+                    .padding(.bottom, 32)
             }
         }
         .ignoresSafeArea()
@@ -109,6 +123,17 @@ struct LockOverlayView: View {
                 }
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .lockTimerUpdated)) { notification in
+            if let remaining = notification.userInfo?["remaining"] as? TimeInterval {
+                remainingSeconds = Int(remaining)
+            }
+        }
+    }
+
+    private var timerText: String {
+        let minutes = remainingSeconds / 60
+        let seconds = remainingSeconds % 60
+        return String(format: "Auto-unlock in %d:%02d", minutes, seconds)
     }
 
     private func unlock() {
@@ -122,6 +147,6 @@ struct LockOverlayView: View {
 }
 
 #Preview {
-    LockOverlayView()
+    LockOverlayView(showUnlockButton: true)
         .frame(width: 800, height: 600)
 }

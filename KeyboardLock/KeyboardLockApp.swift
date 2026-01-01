@@ -48,11 +48,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         switch url.host {
         case "lock":
-            keyboardManager.lock()
+            // Check for mode in path: keyboardlock://lock/keyboard-mouse
+            if let mode = url.pathComponents.dropFirst().first,
+               let lockMode = LockMode(rawValue: mode) {
+                keyboardManager.lock(mode: lockMode)
+            } else {
+                keyboardManager.lock(mode: .keyboard)
+            }
         case "unlock":
             keyboardManager.unlock()
-        case "toggle":
-            keyboardManager.toggle()
         default:
             break
         }
@@ -64,15 +68,32 @@ struct MenuBarView: View {
 
     var body: some View {
         if keyboardManager.isLocked {
-            Button("Unlock Keyboard") {
+            Button("Unlock") {
                 keyboardManager.unlock()
             }
             .keyboardShortcut("u", modifiers: [])
         } else {
             Button("Lock Keyboard") {
-                keyboardManager.lock()
+                keyboardManager.lock(mode: .keyboard)
             }
-            .keyboardShortcut("l", modifiers: [])
+            .keyboardShortcut("1", modifiers: [])
+
+            Button("Lock Keyboard + Mouse") {
+                keyboardManager.lock(mode: .keyboardMouse)
+            }
+            .keyboardShortcut("2", modifiers: [])
+
+            Divider()
+
+            Button("Lock Keyboard (cat mode)") {
+                keyboardManager.lock(mode: .keyboardSilent)
+            }
+            .keyboardShortcut("3", modifiers: [])
+
+            Button("Lock Keyboard + Mouse (cat mode)") {
+                keyboardManager.lock(mode: .keyboardMouseSilent)
+            }
+            .keyboardShortcut("4", modifiers: [])
         }
 
         Divider()

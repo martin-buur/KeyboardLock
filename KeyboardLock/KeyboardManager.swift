@@ -8,14 +8,42 @@
 import Cocoa
 import Combine
 
+enum LockMode: String {
+    case keyboard = "keyboard"
+    case keyboardMouse = "keyboard-mouse"
+    case keyboardSilent = "keyboard-silent"
+    case keyboardMouseSilent = "keyboard-mouse-silent"
+
+    var includesMouse: Bool {
+        self == .keyboardMouse || self == .keyboardMouseSilent
+    }
+
+    var showsOverlay: Bool {
+        self == .keyboard || self == .keyboardMouse
+    }
+
+    var showsUnlockButton: Bool {
+        self == .keyboard
+    }
+}
+
+extension Notification.Name {
+    static let lockTimerUpdated = Notification.Name("com.keyboardlock.lockTimerUpdated")
+}
+
 final class KeyboardManager: ObservableObject {
     @Published private(set) var isLocked = false
     @Published private(set) var hasPermission = false
+    @Published private(set) var currentMode: LockMode?
+    @Published private(set) var lockEndTime: Date?
 
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
     private let unlockTracker = UnlockTracker()
     private let overlayController = LockOverlayController()
+    private var autoUnlockTimer: DispatchWorkItem?
+    private var countdownTimer: Timer?
+    private let autoUnlockDuration: TimeInterval = 120 // 2 minutes
 
     init() {
         checkPermission()
@@ -44,7 +72,7 @@ final class KeyboardManager: ObservableObject {
 
     // MARK: - Lock/Unlock
 
-    func lock() {
+    func lock(mode: LockMode = .keyboard) {
         guard !isLocked else { return }
 
         // Check permission first
@@ -54,12 +82,23 @@ final class KeyboardManager: ObservableObject {
             return
         }
 
-        // Create event tap for keyboard events + media keys
-        // NX_SYSDEFINED = 14 (for media keys like brightness, volume, play/pause)
-        let eventMask: CGEventMask = (1 << CGEventType.keyDown.rawValue) |
+        currentMode = mode
+
+        // Build event mask based on mode
+        var eventMask: CGEventMask = (1 << CGEventType.keyDown.rawValue) |
                                       (1 << CGEventType.keyUp.rawValue) |
                                       (1 << CGEventType.flagsChanged.rawValue) |
-                                      (1 << 14)
+                                      (1 << 14) // Media keys
+
+        if mode.includesMouse {
+            eventMask |= (1 << CGEventType.leftMouseDown.rawValue) |
+                         (1 << CGEventType.leftMouseUp.rawValue) |
+                         (1 << CGEventType.rightMouseDown.rawValue) |
+                         (1 << CGEventType.rightMouseUp.rawValue) |
+                         (1 << CGEventType.otherMouseDown.rawValue) |
+                         (1 << CGEventType.otherMouseUp.rawValue) |
+                         (1 << CGEventType.scrollWheel.rawValue)
+        }
 
         // Store self pointer for callback
         let userInfo = Unmanaged.passUnretained(self).toOpaque()
@@ -72,13 +111,14 @@ final class KeyboardManager: ObservableObject {
             callback: { (proxy, type, event, userInfo) -> Unmanaged<CGEvent>? in
                 guard let userInfo = userInfo else { return Unmanaged.passRetained(event) }
                 let manager = Unmanaged<KeyboardManager>.fromOpaque(userInfo).takeUnretainedValue()
-                return manager.handleKeyEvent(proxy: proxy, type: type, event: event)
+                return manager.handleEvent(proxy: proxy, type: type, event: event)
             },
             userInfo: userInfo
         )
 
         guard let tap = eventTap else {
             print("Failed to create event tap. Check Input Monitoring permission.")
+            currentMode = nil
             return
         }
 
@@ -88,12 +128,23 @@ final class KeyboardManager: ObservableObject {
 
         unlockTracker.reset()
         isLocked = true
-        overlayController.show()
+
+        // Start auto-unlock timer
+        startAutoUnlockTimer()
+
+        // Show overlay if mode requires it
+        if mode.showsOverlay {
+            overlayController.show(showUnlockButton: mode.showsUnlockButton)
+        }
+
         postNotification(name: "KeyboardLockStateChanged", userInfo: ["locked": true])
     }
 
     func unlock() {
         guard isLocked else { return }
+
+        // Cancel auto-unlock timer
+        cancelAutoUnlockTimer()
 
         if let tap = eventTap {
             CGEvent.tapEnable(tap: tap, enable: false)
@@ -103,6 +154,8 @@ final class KeyboardManager: ObservableObject {
         eventTap = nil
         runLoopSource = nil
         isLocked = false
+        currentMode = nil
+        lockEndTime = nil
         overlayController.hide()
         postNotification(name: "KeyboardLockStateChanged", userInfo: ["locked": false])
     }
@@ -111,13 +164,51 @@ final class KeyboardManager: ObservableObject {
         if isLocked {
             unlock()
         } else {
-            lock()
+            lock(mode: .keyboard)
         }
+    }
+
+    // MARK: - Auto-Unlock Timer
+
+    private func startAutoUnlockTimer() {
+        lockEndTime = Date().addingTimeInterval(autoUnlockDuration)
+
+        // Post initial timer update
+        postTimerUpdate()
+
+        // Start countdown timer for UI updates (every second)
+        countdownTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            self?.postTimerUpdate()
+        }
+
+        // Schedule auto-unlock
+        let workItem = DispatchWorkItem { [weak self] in
+            self?.unlock()
+        }
+        autoUnlockTimer = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + autoUnlockDuration, execute: workItem)
+    }
+
+    private func cancelAutoUnlockTimer() {
+        autoUnlockTimer?.cancel()
+        autoUnlockTimer = nil
+        countdownTimer?.invalidate()
+        countdownTimer = nil
+    }
+
+    private func postTimerUpdate() {
+        guard let endTime = lockEndTime else { return }
+        let remaining = max(0, endTime.timeIntervalSinceNow)
+        NotificationCenter.default.post(
+            name: .lockTimerUpdated,
+            object: nil,
+            userInfo: ["remaining": remaining]
+        )
     }
 
     // MARK: - Event Handling
 
-    private func handleKeyEvent(proxy: CGEventTapProxy, type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
+    private func handleEvent(proxy: CGEventTapProxy, type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
         // Handle tap being disabled by system
         if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
             if let tap = eventTap {
@@ -139,15 +230,24 @@ final class KeyboardManager: ObservableObject {
             return Unmanaged.passRetained(event)
         }
 
-        let flags = event.flags
+        // Handle mouse events - block them if in mouse lock mode
+        let mouseEvents: [CGEventType] = [
+            .leftMouseDown, .leftMouseUp,
+            .rightMouseDown, .rightMouseUp,
+            .otherMouseDown, .otherMouseUp,
+            .scrollWheel
+        ]
+        if mouseEvents.contains(type) {
+            return nil // Block mouse event
+        }
 
         // Check for CMD key press (unlock mechanism)
         if type == .flagsChanged {
-            if unlockTracker.trackCmdKey(flags: flags) {
+            if unlockTracker.trackCmdKey(flags: event.flags) {
                 DispatchQueue.main.async { [weak self] in
                     self?.unlock()
                 }
-                return Unmanaged.passRetained(event) // Let this key through
+                return Unmanaged.passRetained(event)
             }
         }
 
