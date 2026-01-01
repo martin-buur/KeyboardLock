@@ -17,6 +17,10 @@ xcodebuild -project KeyboardLock.xcodeproj -scheme KeyboardLock clean
 
 For development, open `KeyboardLock.xcodeproj` in Xcode and use ⌘B to build, ⌘R to run.
 
+## Releasing
+
+When asked to release a new version, read `RELEASE.md` for the complete release process.
+
 ## Architecture
 
 KeyboardLock is a macOS menu bar app that locks keyboard and mouse input. It runs as an LSUIElement (no dock icon).
