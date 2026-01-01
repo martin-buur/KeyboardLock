@@ -7,6 +7,10 @@
 
 import Cocoa
 
+extension Notification.Name {
+    static let unlockProgressChanged = Notification.Name("com.keyboardlock.unlockProgressChanged")
+}
+
 final class UnlockTracker {
     private var cmdPressCount = 0
     private var lastPressTime: Date?
@@ -14,11 +18,15 @@ final class UnlockTracker {
     private let requiredPresses = 6
 
     private var cmdWasPressed = false
+    private var resetWorkItem: DispatchWorkItem?
 
     func reset() {
+        resetWorkItem?.cancel()
+        resetWorkItem = nil
         cmdPressCount = 0
         lastPressTime = nil
         cmdWasPressed = false
+        postProgress()
     }
 
     /// Track CMD key presses from flagsChanged events.
@@ -48,6 +56,8 @@ final class UnlockTracker {
             cmdPressCount = 1
         }
         lastPressTime = now
+        postProgress()
+        scheduleReset()
 
         if cmdPressCount >= requiredPresses {
             reset()
@@ -55,5 +65,22 @@ final class UnlockTracker {
         }
 
         return false
+    }
+
+    private func scheduleReset() {
+        resetWorkItem?.cancel()
+        let workItem = DispatchWorkItem { [weak self] in
+            self?.reset()
+        }
+        resetWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + timeWindow, execute: workItem)
+    }
+
+    private func postProgress() {
+        NotificationCenter.default.post(
+            name: .unlockProgressChanged,
+            object: nil,
+            userInfo: ["pressCount": cmdPressCount, "required": requiredPresses]
+        )
     }
 }

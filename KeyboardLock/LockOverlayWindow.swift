@@ -40,7 +40,7 @@ final class LockOverlayController {
         window.isOpaque = false
         window.backgroundColor = .clear
         window.hasShadow = false
-        window.ignoresMouseEvents = true // Click-through
+        window.ignoresMouseEvents = false // Block clicks - unlock via button or CMD key
         window.contentView = NSHostingView(rootView: LockOverlayView())
 
         return window
@@ -48,10 +48,12 @@ final class LockOverlayController {
 }
 
 struct LockOverlayView: View {
+    @State private var pressCount = 0
+    private let requiredPresses = 6
+
     var body: some View {
         ZStack {
-            // Semi-transparent dark background
-            Color.black.opacity(0.7)
+            Color.black
 
             VStack(spacing: 24) {
                 Image(systemName: "keyboard")
@@ -62,16 +64,60 @@ struct LockOverlayView: View {
                     .font(.system(size: 48, weight: .bold))
                     .foregroundStyle(.white)
 
-                Text("Press ⌘ 6 times to unlock")
-                    .font(.system(size: 24, weight: .medium))
-                    .foregroundStyle(.white.opacity(0.8))
+                if pressCount > 0 {
+                    let remaining = requiredPresses - pressCount
+                    HStack(spacing: 12) {
+                        ForEach(0..<requiredPresses, id: \.self) { index in
+                            Circle()
+                                .fill(index < pressCount ? Color.white : Color.white.opacity(0.3))
+                                .frame(width: 16, height: 16)
+                        }
+                    }
+                    .padding(.vertical, 8)
 
-                Text("or click the menu bar icon")
-                    .font(.system(size: 18))
-                    .foregroundStyle(.white.opacity(0.6))
+                    Text("\(remaining) more")
+                        .font(.system(size: 24, weight: .medium))
+                        .foregroundStyle(.white.opacity(0.8))
+                        .contentTransition(.numericText())
+                } else {
+                    Text("Press ⌘ 6 times to unlock")
+                        .font(.system(size: 24, weight: .medium))
+                        .foregroundStyle(.white.opacity(0.8))
+                }
+
+                Button(action: unlock) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "lock.open")
+                        Text("Unlock")
+                    }
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 32)
+                    .padding(.vertical, 16)
+                    .background(.white.opacity(0.2))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+                .buttonStyle(.plain)
+                .padding(.top, 16)
             }
         }
         .ignoresSafeArea()
+        .onReceive(NotificationCenter.default.publisher(for: .unlockProgressChanged)) { notification in
+            if let count = notification.userInfo?["pressCount"] as? Int {
+                withAnimation(.easeInOut(duration: 0.15)) {
+                    pressCount = count
+                }
+            }
+        }
+    }
+
+    private func unlock() {
+        DistributedNotificationCenter.default().postNotificationName(
+            NSNotification.Name("com.keyboardlock.unlock"),
+            object: nil,
+            userInfo: nil,
+            deliverImmediately: true
+        )
     }
 }
 
