@@ -100,6 +100,10 @@ struct MenuBarView: View {
             Divider()
         }
 
+        Button("Check for Updates...") {
+            UpdaterService.shared.checkForUpdates()
+        }
+
         SettingsLink {
             Text("Settings...")
         }

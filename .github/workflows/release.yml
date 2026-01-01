@@ -1,0 +1,261 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-sign-notarize:
+    name: Build, Sign & Notarize
+    runs-on: macos-15
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        fetch-tags: true
+
+    - name: Show Xcode version
+      run: |
+        xcodebuild -version
+        xcodebuild -showsdks
+
+    - name: Import signing certificate
+      env:
+        CERTIFICATE_BASE64: ${{ secrets.DEVELOPER_ID_CERTIFICATE_BASE64 }}
+        CERTIFICATE_PASSWORD: ${{ secrets.DEVELOPER_ID_CERTIFICATE_PASSWORD }}
+      run: |
+        # Create temporary keychain
+        KEYCHAIN_PATH=$RUNNER_TEMP/signing.keychain-db
+        KEYCHAIN_PASSWORD=$(openssl rand -base64 32)
+
+        security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+        security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+        security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+        # Import certificate
+        echo "$CERTIFICATE_BASE64" | base64 --decode > $RUNNER_TEMP/certificate.p12
+        security import $RUNNER_TEMP/certificate.p12 \
+          -P "$CERTIFICATE_PASSWORD" \
+          -A \
+          -t cert \
+          -f pkcs12 \
+          -k "$KEYCHAIN_PATH"
+
+        # Allow codesign to access keychain
+        security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+        # Add to search list
+        security list-keychain -d user -s "$KEYCHAIN_PATH" login.keychain
+
+        # Find and export the Developer ID Application identity
+        IDENTITY=$(security find-identity -v -p codesigning "$KEYCHAIN_PATH" | grep "Developer ID Application" | head -1 | sed 's/.*"\(.*\)".*/\1/')
+        echo "Found signing identity: $IDENTITY"
+        echo "SIGNING_IDENTITY=$IDENTITY" >> $GITHUB_ENV
+
+    - name: Resolve dependencies
+      run: xcodebuild -resolvePackageDependencies -project KeyboardLock.xcodeproj -scheme KeyboardLock
+
+    - name: Set version from tag
+      run: |
+        # Extract version from tag (v1.0.0 -> 1.0.0)
+        VERSION="${GITHUB_REF_NAME#v}"
+        echo "Setting version to $VERSION"
+
+        # Update Info.plist with version from tag
+        /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $VERSION" KeyboardLock/Info.plist
+        /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${{ github.run_number }}" KeyboardLock/Info.plist
+
+        echo "APP_VERSION=$VERSION" >> $GITHUB_ENV
+
+    - name: Build and archive app
+      run: |
+        xcodebuild clean archive \
+          -project KeyboardLock.xcodeproj \
+          -scheme KeyboardLock \
+          -configuration Release \
+          -archivePath DerivedData/KeyboardLock.xcarchive \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGNING_ALLOWED=NO
+
+    - name: Sign app bundle
+      run: |
+        APP_PATH="DerivedData/KeyboardLock.xcarchive/Products/Applications/KeyboardLock.app"
+
+        # Sign frameworks and helpers first (deep signing)
+        find "$APP_PATH" -type d -name "*.framework" -o -type f -perm +111 | while read -r item; do
+          codesign --force --options runtime \
+            --sign "$SIGNING_IDENTITY" \
+            --timestamp \
+            "$item" 2>/dev/null || true
+        done
+
+        # Sign the main app bundle
+        codesign --force --options runtime \
+          --sign "$SIGNING_IDENTITY" \
+          --entitlements KeyboardLock/KeyboardLock.entitlements \
+          --timestamp \
+          "$APP_PATH"
+
+        # Verify signature
+        codesign --verify --verbose=2 "$APP_PATH"
+        echo "Signature verification passed"
+
+    - name: Install create-dmg
+      run: brew install create-dmg
+
+    - name: Create and sign DMG
+      run: |
+        APP_PATH="DerivedData/KeyboardLock.xcarchive/Products/Applications/KeyboardLock.app"
+        DMG_PATH="DerivedData/KeyboardLock.dmg"
+
+        # Create DMG with Applications folder link
+        # Note: create-dmg exits with 2 if it can't set a background, but DMG is still valid
+        create-dmg \
+          --volname "KeyboardLock" \
+          --window-pos 200 120 \
+          --window-size 600 400 \
+          --icon-size 128 \
+          --text-size 14 \
+          --icon "KeyboardLock.app" 150 200 \
+          --app-drop-link 450 200 \
+          --hide-extension "KeyboardLock.app" \
+          --no-internet-enable \
+          "$DMG_PATH" \
+          "$APP_PATH" || test $? -eq 2
+
+        # Sign the DMG
+        codesign --force \
+          --sign "$SIGNING_IDENTITY" \
+          --timestamp \
+          "$DMG_PATH"
+
+        echo "DMG created and signed at $DMG_PATH"
+
+    - name: Notarize DMG
+      env:
+        APPLE_ID: ${{ secrets.APPLE_ID }}
+        APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
+        TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      run: |
+        DMG_PATH="DerivedData/KeyboardLock.dmg"
+
+        echo "Submitting for notarization..."
+        xcrun notarytool submit "$DMG_PATH" \
+          --apple-id "$APPLE_ID" \
+          --password "$APPLE_ID_PASSWORD" \
+          --team-id "$TEAM_ID" \
+          --wait
+
+        echo "Stapling notarization ticket..."
+        xcrun stapler staple "$DMG_PATH"
+
+        echo "Validating stapled ticket..."
+        xcrun stapler validate "$DMG_PATH"
+
+        echo "Notarization complete"
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: KeyboardLock-${{ github.ref_name }}
+        path: DerivedData/KeyboardLock.dmg
+
+    - name: Create GitHub Release
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        VERSION="${GITHUB_REF_NAME}"
+
+        # Ensure the annotated tag object is available locally
+        git fetch --force --tags origin "refs/tags/${VERSION}:refs/tags/${VERSION}"
+
+        # Rename DMG to include version
+        mv "DerivedData/KeyboardLock.dmg" "DerivedData/KeyboardLock-${VERSION}.dmg"
+        DMG_PATH="DerivedData/KeyboardLock-${VERSION}.dmg"
+
+        # Get release notes from annotated tag, fallback to simple message
+        NOTES=$(git tag -l --format='%(contents)' "$VERSION" 2>/dev/null || true)
+        if [ -z "$NOTES" ]; then
+          NOTES="Download KeyboardLock ${VERSION}"
+        fi
+        printf '%s\n' "$NOTES" > /tmp/release_notes.md
+
+        gh release create "$VERSION" \
+          "$DMG_PATH" \
+          --title "KeyboardLock $VERSION" \
+          --notes-file /tmp/release_notes.md
+
+    - name: Update appcast on gh-pages
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+      run: |
+        TAG="${GITHUB_REF_NAME}"
+        DMG_PATH="DerivedData/KeyboardLock-${TAG}.dmg"
+
+        # Ensure the annotated tag object is available locally
+        git fetch --force --tags origin "refs/tags/${TAG}:refs/tags/${TAG}"
+
+        # Clone gh-pages branch (or create if doesn't exist)
+        git clone --single-branch --branch gh-pages https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git gh-pages || {
+          mkdir gh-pages
+          cd gh-pages
+          git init
+          git checkout -b gh-pages
+          git remote add origin https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git
+          cd ..
+        }
+
+        # Copy DMG to downloads folder for generate_appcast
+        mkdir -p gh-pages/downloads
+        cp "$DMG_PATH" "gh-pages/downloads/KeyboardLock-${TAG}.dmg"
+        rm -f gh-pages/appcast.xml
+
+        # Read release notes from the annotated tag
+        NOTES=$(git tag -l --format='%(contents)' "$TAG" 2>/dev/null || true)
+        if [ -z "$NOTES" ]; then
+          NOTES="Download KeyboardLock ${TAG}"
+        fi
+        printf '%s\n' "$NOTES" > /tmp/release_notes.md
+
+        # Convert markdown to HTML using GitHub's renderer
+        gh api markdown -f text="$(cat /tmp/release_notes.md)" -f mode=gfm > /tmp/release_notes.html
+        {
+          echo "<html><body>"
+          cat /tmp/release_notes.html
+          echo "</body></html>"
+        } > "gh-pages/KeyboardLock-${TAG}.html"
+
+        # Find Sparkle's generate_appcast tool
+        GENERATE_APPCAST=$(find ~/Library/Developer/Xcode/DerivedData -name "generate_appcast" -path "*/artifacts/*" | head -1)
+
+        # Write private key to temp file (generate_appcast needs a file)
+        echo "$SPARKLE_PRIVATE_KEY" > /tmp/sparkle_key
+
+        # Generate appcast using Sparkle's official tool
+        "$GENERATE_APPCAST" \
+          --ed-key-file /tmp/sparkle_key \
+          --link "https://github.com/${{ github.repository }}/releases" \
+          --download-url-prefix "https://github.com/${{ github.repository }}/releases/download/${TAG}/" \
+          -o gh-pages/appcast.xml \
+          gh-pages/downloads/
+
+        # Point release notes links to GitHub Pages
+        PAGES_URL="https://${{ github.repository_owner }}.github.io/KeyboardLock"
+        perl -0pi -e "s|<sparkle:releaseNotesLink>[^<]*/([^/]*\\.html)</sparkle:releaseNotesLink>|<sparkle:releaseNotesLink>${PAGES_URL}/\$1</sparkle:releaseNotesLink>|g" gh-pages/appcast.xml
+
+        # Clean up
+        rm /tmp/sparkle_key
+        rm -rf gh-pages/downloads
+
+        # Commit and push appcast
+        cd gh-pages
+        git config user.name "GitHub Actions"
+        git config user.email "actions@github.com"
+        git add appcast.xml "KeyboardLock-${TAG}.html"
+        git commit -m "Update appcast for ${TAG}" || echo "No changes to commit"
+        git push origin gh-pages

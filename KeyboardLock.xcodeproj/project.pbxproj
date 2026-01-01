@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		E429FBE72F06912D00D42794 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E429FBE62F06912D00D42794 /* Sparkle */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		E4C3F9202F065FC9007E673A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -72,6 +76,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E429FBE72F06912D00D42794 /* Sparkle in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -152,6 +157,7 @@
 			);
 			name = KeyboardLock;
 			packageProductDependencies = (
+				E429FBE62F06912D00D42794 /* Sparkle */,
 			);
 			productName = KeyboardLock;
 			productReference = E4C3F9102F065FC8007E673A /* KeyboardLock.app */;
@@ -238,6 +244,9 @@
 			);
 			mainGroup = E4C3F9072F065FC8007E673A;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				E429FBE52F06912D00D42794 /* XCRemoteSwiftPackageReference "Sparkle" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = E4C3F9112F065FC8007E673A /* Products */;
 			projectDirPath = "";
@@ -661,6 +670,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		E429FBE52F06912D00D42794 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.8.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		E429FBE62F06912D00D42794 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E429FBE52F06912D00D42794 /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = E4C3F9082F065FC8007E673A /* Project object */;
 }

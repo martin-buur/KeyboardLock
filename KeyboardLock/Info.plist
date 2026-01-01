@@ -17,5 +17,9 @@
 	<true/>
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright 2026 Martijn Buurman. All rights reserved.</string>
+	<key>SUFeedURL</key>
+	<string>https://martin-buur.github.io/KeyboardLock/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>qM3bI2nn7u4TTiVG7pypXc4GUsjuwppbOsn/Z+nLido=</string>
 </dict>
 </plist>
