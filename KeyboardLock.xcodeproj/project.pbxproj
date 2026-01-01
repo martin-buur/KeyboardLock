@@ -23,13 +23,31 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		E424778D2F06616300953B65 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		E424778F2F06616300953B65 /* keyboardlock-cli */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "keyboardlock-cli"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E4C3F9102F065FC8007E673A /* KeyboardLock.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KeyboardLock.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E4C3F91F2F065FC9007E673A /* KeyboardLockTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KeyboardLockTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E4C3F9292F065FC9007E673A /* KeyboardLockUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KeyboardLockUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		E42477902F06616300953B65 /* keyboardlock-cli */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "keyboardlock-cli";
+			sourceTree = "<group>";
+		};
 		E4C3F9122F065FC8007E673A /* KeyboardLock */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = KeyboardLock;
@@ -48,6 +66,13 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		E424778C2F06616300953B65 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E4C3F90D2F065FC8007E673A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -78,6 +103,7 @@
 				E4C3F9122F065FC8007E673A /* KeyboardLock */,
 				E4C3F9222F065FC9007E673A /* KeyboardLockTests */,
 				E4C3F92C2F065FC9007E673A /* KeyboardLockUITests */,
+				E42477902F06616300953B65 /* keyboardlock-cli */,
 				E4C3F9112F065FC8007E673A /* Products */,
 			);
 			sourceTree = "<group>";
@@ -88,6 +114,7 @@
 				E4C3F9102F065FC8007E673A /* KeyboardLock.app */,
 				E4C3F91F2F065FC9007E673A /* KeyboardLockTests.xctest */,
 				E4C3F9292F065FC9007E673A /* KeyboardLockUITests.xctest */,
+				E424778F2F06616300953B65 /* keyboardlock-cli */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -95,6 +122,28 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		E424778E2F06616300953B65 /* keyboardlock-cli */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E42477932F06616300953B65 /* Build configuration list for PBXNativeTarget "keyboardlock-cli" */;
+			buildPhases = (
+				E424778B2F06616300953B65 /* Sources */,
+				E424778C2F06616300953B65 /* Frameworks */,
+				E424778D2F06616300953B65 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				E42477902F06616300953B65 /* keyboardlock-cli */,
+			);
+			name = "keyboardlock-cli";
+			packageProductDependencies = (
+			);
+			productName = "keyboardlock-cli";
+			productReference = E424778F2F06616300953B65 /* keyboardlock-cli */;
+			productType = "com.apple.product-type.tool";
+		};
 		E4C3F90F2F065FC8007E673A /* KeyboardLock */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = E4C3F9332F065FC9007E673A /* Build configuration list for PBXNativeTarget "KeyboardLock" */;
@@ -173,6 +222,9 @@
 				LastSwiftUpdateCheck = 2600;
 				LastUpgradeCheck = 2600;
 				TargetAttributes = {
+					E424778E2F06616300953B65 = {
+						CreatedOnToolsVersion = 26.0;
+					};
 					E4C3F90F2F065FC8007E673A = {
 						CreatedOnToolsVersion = 26.0;
 					};
@@ -203,6 +255,7 @@
 				E4C3F90F2F065FC8007E673A /* KeyboardLock */,
 				E4C3F91E2F065FC9007E673A /* KeyboardLockTests */,
 				E4C3F9282F065FC9007E673A /* KeyboardLockUITests */,
+				E424778E2F06616300953B65 /* keyboardlock-cli */,
 			);
 		};
 /* End PBXProject section */
@@ -232,6 +285,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		E424778B2F06616300953B65 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E4C3F90C2F065FC8007E673A /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -269,6 +329,32 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		E42477942F06616300953B65 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 85SNX4ZWF4;
+				ENABLE_HARDENED_RUNTIME = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		E42477952F06616300953B65 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 85SNX4ZWF4;
+				ENABLE_HARDENED_RUNTIME = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 		E4C3F9312F065FC9007E673A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -398,16 +484,16 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 85SNX4ZWF4;
-				ENABLE_APP_SANDBOX = YES;
+				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
-				ENABLE_USER_SELECTED_FILES = readonly;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = KeyboardLock/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.techtails.KeyboardLock;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -430,16 +516,16 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 85SNX4ZWF4;
-				ENABLE_APP_SANDBOX = YES;
+				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
-				ENABLE_USER_SELECTED_FILES = readonly;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = KeyboardLock/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.techtails.KeyboardLock;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -536,6 +622,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		E42477932F06616300953B65 /* Build configuration list for PBXNativeTarget "keyboardlock-cli" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E42477942F06616300953B65 /* Debug */,
+				E42477952F06616300953B65 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		E4C3F90B2F065FC8007E673A /* Build configuration list for PBXProject "KeyboardLock" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
