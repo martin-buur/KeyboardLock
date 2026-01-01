@@ -43,11 +43,6 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		E42477902F06616300953B65 /* keyboardlock-cli */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "keyboardlock-cli";
-			sourceTree = "<group>";
-		};
 		E4C3F9122F065FC8007E673A /* KeyboardLock */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = KeyboardLock;
@@ -103,7 +98,6 @@
 				E4C3F9122F065FC8007E673A /* KeyboardLock */,
 				E4C3F9222F065FC9007E673A /* KeyboardLockTests */,
 				E4C3F92C2F065FC9007E673A /* KeyboardLockUITests */,
-				E42477902F06616300953B65 /* keyboardlock-cli */,
 				E4C3F9112F065FC8007E673A /* Products */,
 			);
 			sourceTree = "<group>";
@@ -133,9 +127,6 @@
 			buildRules = (
 			);
 			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				E42477902F06616300953B65 /* keyboardlock-cli */,
 			);
 			name = "keyboardlock-cli";
 			packageProductDependencies = (

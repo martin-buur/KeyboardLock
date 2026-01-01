@@ -15,6 +15,7 @@ final class KeyboardManager: ObservableObject {
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
     private let unlockTracker = UnlockTracker()
+    private let overlayController = LockOverlayController()
 
     init() {
         checkPermission()
@@ -53,10 +54,12 @@ final class KeyboardManager: ObservableObject {
             return
         }
 
-        // Create event tap for keyboard events
+        // Create event tap for keyboard events + media keys
+        // NX_SYSDEFINED = 14 (for media keys like brightness, volume, play/pause)
         let eventMask: CGEventMask = (1 << CGEventType.keyDown.rawValue) |
                                       (1 << CGEventType.keyUp.rawValue) |
-                                      (1 << CGEventType.flagsChanged.rawValue)
+                                      (1 << CGEventType.flagsChanged.rawValue) |
+                                      (1 << 14)
 
         // Store self pointer for callback
         let userInfo = Unmanaged.passUnretained(self).toOpaque()
@@ -85,6 +88,7 @@ final class KeyboardManager: ObservableObject {
 
         unlockTracker.reset()
         isLocked = true
+        overlayController.show()
         postNotification(name: "KeyboardLockStateChanged", userInfo: ["locked": true])
     }
 
@@ -99,6 +103,7 @@ final class KeyboardManager: ObservableObject {
         eventTap = nil
         runLoopSource = nil
         isLocked = false
+        overlayController.hide()
         postNotification(name: "KeyboardLockStateChanged", userInfo: ["locked": false])
     }
 
@@ -121,7 +126,19 @@ final class KeyboardManager: ObservableObject {
             return nil
         }
 
-        let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
+        // Handle media keys (NX_SYSDEFINED, type 14)
+        if type.rawValue == 14 {
+            // Check if it's a media key event (subtype 8)
+            if let nsEvent = NSEvent(cgEvent: event) {
+                if nsEvent.subtype.rawValue == 8 {
+                    // Block media key
+                    return nil
+                }
+            }
+            // Let other system-defined events through
+            return Unmanaged.passRetained(event)
+        }
+
         let flags = event.flags
 
         // Check for CMD key press (unlock mechanism)
