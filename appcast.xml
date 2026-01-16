@@ -3,13 +3,13 @@
     <channel>
         <title>KeyboardLock</title>
         <item>
-            <title>0.1.1</title>
-            <pubDate>Thu, 01 Jan 2026 13:26:33 +0000</pubDate>
+            <title>0.2.0</title>
+            <pubDate>Fri, 16 Jan 2026 19:52:48 +0000</pubDate>
             <link>https://github.com/martin-buur/KeyboardLock/releases</link>
-            <sparkle:version>6</sparkle:version>
-            <sparkle:shortVersionString>0.1.1</sparkle:shortVersionString>
+            <sparkle:version>7</sparkle:version>
+            <sparkle:shortVersionString>0.2.0</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>15.6</sparkle:minimumSystemVersion>
-            <enclosure url="https://github.com/martin-buur/KeyboardLock/releases/download/v0.1.1/KeyboardLock-v0.1.1.dmg" length="1757241" type="application/octet-stream" sparkle:edSignature="S1cowsoZjMTYRfQ+5tErvH+I0PduQkMyVWrZoh8sOhuZieXT0KkLnJRNCO7MBk0tICD8+pqd8gurJ9QUSy33Aw=="/>
+            <enclosure url="https://github.com/martin-buur/KeyboardLock/releases/download/v0.2.0/KeyboardLock-v0.2.0.dmg" length="1745764" type="application/octet-stream" sparkle:edSignature="yr8fbPHLQLmPEFHr9BGZYBoiVitZuEaeqfU2FgNBUWEeHtpQIv8+6cyb0qH9UO9jujyE6N06gByE1pzLjt3oBw=="/>
         </item>
     </channel>
 </rss>
