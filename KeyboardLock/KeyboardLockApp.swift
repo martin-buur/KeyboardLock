@@ -68,6 +68,8 @@ struct MenuBarIcon: View {
 
 struct MenuBarView: View {
     @ObservedObject var keyboardManager: KeyboardManager
+    @AppStorage(SettingsKey.showOverlay) private var showOverlay = true
+    @AppStorage(SettingsKey.blockMouse) private var blockMouse = false
 
     var body: some View {
         if keyboardManager.isLocked {
@@ -76,33 +78,24 @@ struct MenuBarView: View {
             }
             .keyboardShortcut("u", modifiers: [])
         } else {
-            Button("Lock Keyboard") {
-                keyboardManager.lock(mode: .keyboard)
+            Button("Lock") {
+                keyboardManager.lock(mode: AppSettings.lockModeFromToggles)
             }
-            .keyboardShortcut("1", modifiers: [])
-
-            Button("Lock Keyboard + Mouse") {
-                keyboardManager.lock(mode: .keyboardMouse)
-            }
-            .keyboardShortcut("2", modifiers: [])
-
-            Divider()
-
-            Button("Lock Keyboard (cat mode)") {
-                keyboardManager.lock(mode: .keyboardSilent)
-            }
-            .keyboardShortcut("3", modifiers: [])
-
-            Button("Lock Keyboard + Mouse (cat mode)") {
-                keyboardManager.lock(mode: .keyboardMouseSilent)
-            }
-            .keyboardShortcut("4", modifiers: [])
+            .keyboardShortcut("l", modifiers: [])
         }
 
         Divider()
 
+        Toggle("Show Overlay", isOn: $showOverlay)
+            .disabled(keyboardManager.isLocked)
+
+        Toggle("Block Mouse", isOn: $blockMouse)
+            .disabled(keyboardManager.isLocked)
+
+        Divider()
+
         if !keyboardManager.hasPermission {
-            Button("Grant Permission...") {
+            Button("Grant Accessibility...") {
                 keyboardManager.requestPermission()
             }
             Divider()
@@ -116,6 +109,8 @@ struct MenuBarView: View {
             Text("Settings...")
         }
         .keyboardShortcut(",", modifiers: .command)
+
+        Divider()
 
         Button("Quit") {
             NSApplication.shared.terminate(nil)
