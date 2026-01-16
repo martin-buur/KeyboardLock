@@ -258,6 +258,11 @@ final class KeyboardManager: ObservableObject {
             }
         }
 
+        // Reset unlock tracker on any non-CMD key press
+        if type == .keyDown || type == .keyUp {
+            unlockTracker.reset()
+        }
+
         // Block all other keyboard events
         return nil
     }
