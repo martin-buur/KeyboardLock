@@ -37,7 +37,7 @@ struct GeneralSettingsView: View {
 
     var body: some View {
         Form {
-            Section {
+            Section("Auto-Unlock Timer") {
                 Toggle("Auto-unlock after timeout", isOn: $autoUnlockEnabled)
 
                 if autoUnlockEnabled {
@@ -50,17 +50,13 @@ struct GeneralSettingsView: View {
                             .foregroundStyle(.secondary)
                     }
                 }
-            } header: {
-                Text("Auto-Unlock Timer")
             }
 
-            Section {
+            Section("System") {
                 Toggle("Launch at Login", isOn: $launchAtLogin)
                     .onChange(of: launchAtLogin) { _, newValue in
                         setLaunchAtLogin(newValue)
                     }
-            } header: {
-                Text("System")
             }
         }
         .formStyle(.grouped)

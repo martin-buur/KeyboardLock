@@ -15,48 +15,43 @@ struct RaycastIntegrationView: View {
                     .foregroundStyle(.secondary)
             }
 
-            Section {
-                HStack {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Lock")
-                        Text("Locks keyboard using current settings")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-
-                    Spacer()
-
-                    Button("Add to Raycast") {
-                        openRaycastQuicklinkCreator(name: "Lock Keyboard", link: "keyboardlock://lock")
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.small)
-                }
-                .padding(.vertical, 4)
-
-                HStack {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Unlock")
-                        Text("Unlocks keyboard and mouse")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-
-                    Spacer()
-
-                    Button("Add to Raycast") {
-                        openRaycastQuicklinkCreator(name: "Unlock Keyboard", link: "keyboardlock://unlock")
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.small)
-                }
-                .padding(.vertical, 4)
-            } header: {
-                Text("Commands")
+            Section("Commands") {
+                commandRow(
+                    title: "Lock",
+                    subtitle: "Locks keyboard using current settings",
+                    raycastName: "Lock Keyboard",
+                    link: "keyboardlock://lock"
+                )
+                commandRow(
+                    title: "Unlock",
+                    subtitle: "Unlocks keyboard and mouse",
+                    raycastName: "Unlock Keyboard",
+                    link: "keyboardlock://unlock"
+                )
             }
         }
         .formStyle(.grouped)
         .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private func commandRow(title: String, subtitle: String, raycastName: String, link: String) -> some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                Text(subtitle)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer()
+
+            Button("Add to Raycast") {
+                openRaycastQuicklinkCreator(name: raycastName, link: link)
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.small)
+        }
+        .padding(.vertical, 4)
     }
 
     private func openRaycastQuicklinkCreator(name: String, link: String) {

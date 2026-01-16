@@ -25,17 +25,10 @@ enum AppSettings {
         ])
     }
 
-    static var showOverlay: Bool {
-        get { UserDefaults.standard.bool(forKey: SettingsKey.showOverlay) }
-        set { UserDefaults.standard.set(newValue, forKey: SettingsKey.showOverlay) }
-    }
-
-    static var blockMouse: Bool {
-        get { UserDefaults.standard.bool(forKey: SettingsKey.blockMouse) }
-        set { UserDefaults.standard.set(newValue, forKey: SettingsKey.blockMouse) }
-    }
-
     static var lockModeFromToggles: LockMode {
-        LockMode(showsOverlay: showOverlay, blocksMouse: blockMouse)
+        LockMode(
+            showsOverlay: UserDefaults.standard.bool(forKey: SettingsKey.showOverlay),
+            blocksMouse: UserDefaults.standard.bool(forKey: SettingsKey.blockMouse)
+        )
     }
 }
