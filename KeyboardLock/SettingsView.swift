@@ -32,7 +32,6 @@ struct SettingsView: View {
 struct GeneralSettingsView: View {
     @AppStorage(SettingsKey.autoUnlockEnabled) private var autoUnlockEnabled = true
     @AppStorage(SettingsKey.autoUnlockDuration) private var autoUnlockDuration: Double = 120
-    @AppStorage(SettingsKey.defaultLockMode) private var defaultLockMode = LockMode.keyboard.rawValue
 
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
 
@@ -53,18 +52,6 @@ struct GeneralSettingsView: View {
                 }
             } header: {
                 Text("Auto-Unlock Timer")
-            }
-
-            Section {
-                Picker("Default lock mode", selection: $defaultLockMode) {
-                    Text("Keyboard").tag(LockMode.keyboard.rawValue)
-                    Text("Keyboard + Mouse").tag(LockMode.keyboardMouse.rawValue)
-                    Divider()
-                    Text("Keyboard (cat mode)").tag(LockMode.keyboardSilent.rawValue)
-                    Text("Keyboard + Mouse (cat mode)").tag(LockMode.keyboardMouseSilent.rawValue)
-                }
-            } header: {
-                Text("Behavior")
             }
 
             Section {

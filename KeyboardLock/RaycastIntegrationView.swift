@@ -8,13 +8,6 @@
 import SwiftUI
 
 struct RaycastIntegrationView: View {
-    private let quicklinks: [(mode: LockMode, name: String, description: String)] = [
-        (.keyboard, "Lock Keyboard", "Shows overlay with unlock button"),
-        (.keyboardMouse, "Lock Keyboard + Mouse", "Shows overlay, no unlock button"),
-        (.keyboardSilent, "Lock Keyboard (Cat Mode)", "Silent lock, no overlay"),
-        (.keyboardMouseSilent, "Lock Keyboard + Mouse (Cat Mode)", "Silent lock, blocks all input"),
-    ]
-
     var body: some View {
         Form {
             Section {
@@ -23,30 +16,24 @@ struct RaycastIntegrationView: View {
             }
 
             Section {
-                ForEach(quicklinks, id: \.mode) { quicklink in
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(quicklink.name)
-                            Text(quicklink.description)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-
-                        Spacer()
-
-                        Button("Add to Raycast") {
-                            addToRaycast(mode: quicklink.mode, name: quicklink.name)
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .controlSize(.small)
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Lock")
+                        Text("Locks keyboard using current settings")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                     }
-                    .padding(.vertical, 4)
-                }
-            } header: {
-                Text("Lock Commands")
-            }
 
-            Section {
+                    Spacer()
+
+                    Button("Add to Raycast") {
+                        openRaycastQuicklinkCreator(name: "Lock Keyboard", link: "keyboardlock://lock")
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.small)
+                }
+                .padding(.vertical, 4)
+
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Unlock")
@@ -58,27 +45,18 @@ struct RaycastIntegrationView: View {
                     Spacer()
 
                     Button("Add to Raycast") {
-                        addUnlockToRaycast()
+                        openRaycastQuicklinkCreator(name: "Unlock Keyboard", link: "keyboardlock://unlock")
                     }
                     .buttonStyle(.borderedProminent)
                     .controlSize(.small)
                 }
                 .padding(.vertical, 4)
             } header: {
-                Text("Unlock Command")
+                Text("Commands")
             }
         }
         .formStyle(.grouped)
         .fixedSize(horizontal: false, vertical: true)
-    }
-
-    private func addToRaycast(mode: LockMode, name: String) {
-        let link = "keyboardlock://lock/\(mode.rawValue)"
-        openRaycastQuicklinkCreator(name: name, link: link)
-    }
-
-    private func addUnlockToRaycast() {
-        openRaycastQuicklinkCreator(name: "Unlock Keyboard", link: "keyboardlock://unlock")
     }
 
     private func openRaycastQuicklinkCreator(name: String, link: String) {

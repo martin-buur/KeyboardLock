@@ -73,7 +73,7 @@ final class KeyboardManager: ObservableObject {
 
     func lock(mode: LockMode? = nil) {
         guard !isLocked else { return }
-        let mode = mode ?? AppSettings.defaultLockMode
+        let mode = mode ?? AppSettings.lockModeFromToggles
 
         // Check permission first
         checkPermission()
@@ -164,7 +164,7 @@ final class KeyboardManager: ObservableObject {
         if isLocked {
             unlock()
         } else {
-            lock(mode: AppSettings.defaultLockMode)
+            lock(mode: AppSettings.lockModeFromToggles)
         }
     }
 
