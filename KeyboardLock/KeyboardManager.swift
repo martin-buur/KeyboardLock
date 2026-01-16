@@ -14,6 +14,15 @@ enum LockMode: String {
     case keyboardSilent = "keyboard-silent"
     case keyboardMouseSilent = "keyboard-mouse-silent"
 
+    init(showsOverlay: Bool, blocksMouse: Bool) {
+        switch (showsOverlay, blocksMouse) {
+        case (true, false): self = .keyboard
+        case (true, true): self = .keyboardMouse
+        case (false, false): self = .keyboardSilent
+        case (false, true): self = .keyboardMouseSilent
+        }
+    }
+
     var includesMouse: Bool {
         self == .keyboardMouse || self == .keyboardMouseSilent
     }

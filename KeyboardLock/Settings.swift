@@ -36,11 +36,6 @@ enum AppSettings {
     }
 
     static var lockModeFromToggles: LockMode {
-        switch (showOverlay, blockMouse) {
-        case (true, false): return .keyboard
-        case (true, true): return .keyboardMouse
-        case (false, false): return .keyboardSilent
-        case (false, true): return .keyboardMouseSilent
-        }
+        LockMode(showsOverlay: showOverlay, blocksMouse: blockMouse)
     }
 }
