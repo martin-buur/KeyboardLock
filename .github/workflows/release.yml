@@ -233,6 +233,9 @@ jobs:
           echo "</body></html>"
         } > "gh-pages/KeyboardLock-${TAG}.html"
 
+        # Copy release notes to downloads folder so generate_appcast can find it
+        cp "gh-pages/KeyboardLock-${TAG}.html" "gh-pages/downloads/"
+
         # Find Sparkle's generate_appcast tool
         GENERATE_APPCAST=$(find ~/Library/Developer/Xcode/DerivedData -name "generate_appcast" -path "*/artifacts/*" | head -1)
 
